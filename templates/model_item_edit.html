@@ -1,0 +1,65 @@
+﻿{% extends "admin_base.html" %}
+
+{% block content %}
+            <h2>Admin :: {{ moduleTitle }}</h2>
+            {% if item %}
+            <p class="createNew"><a href="{{ urlPrefix }}/{{ moduleTitle }}/new/">Create new</a></p>
+            {% endif %}
+            <h2>Admin :: SimplePage</h2>
+            <!-- Editable properties -->
+            <form name="adminEditForm" method="post" action="{{ urlPrefix }}/{{moduleTitle}}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/">
+            <table class="editForm">
+                <tr>
+                    <td colspan="2"><h3>Editable properties</h3></td>
+                </tr>
+                {% for field in editProperties %}
+                <tr>
+                    <td>{{field.verbose_name}}:</td>
+                    <td>
+                    {% if field.choices %}
+                    <select name="{{field.name}}">
+                        {% for option in field.choices %}
+                        <option value="{{option}}" {% ifequal option field.value %}selected="selected"{%endifequal%}>{{option}}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                        {% ifequal field.propertyType "TextProperty" %}
+                        <textarea name="{{field.name}}" rows="15" cols="40" style="width:450px;">{{ field.value }}</textarea>
+                        {% else %}
+                            {% ifequal field.propertyType "ReferenceProperty" %}
+                            <select name="{{field.name}}">
+                                {% for fkItem in field.referencedItems %}
+                                <option value="{{fkItem.key}}" {% ifequal fkItem.key field.value.key %}selected="selected"{%endifequal%}>{{fkItem}}</option>
+                                {% endfor %}
+                            </select>
+                            <a href="{{ urlPrefix }}/{{field.reference_class.kind}}/new/" target="_blank">Add new</a>
+                            {% else %}
+                            <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value }}{% endif %}"/>
+                            {% endifequal %}
+                        {% endifequal %}
+                    {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>
+                        <div style="float:left; clear:left;" class="okButton">
+                            <input type="submit" value="OK"/>
+                        </div>
+                        {% if item %}
+                        <div style="float:right; clear:right;" class="deleteButton">
+                            <a href="{{ urlPrefix }}/{{ moduleTitle }}/delete/{{ item.key }}/" onclick='return confirm("Are you sure?");'>Delete</a>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if item %}
+                <!-- Readonly properties -->
+                {% for field in readonlyProperties %}
+                <tr><td>{{ field.verbose_name }}:</td><td>{{ field.value }}</td></tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+            </form>
+{% endblock %}

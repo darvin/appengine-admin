@@ -1,0 +1,30 @@
+﻿{% extends "admin_base.html" %}
+
+{% block content %}
+            <h2>Admin :: {{ moduleTitle }}</h2>
+            <p class="createNew"><a href="{{ urlPrefix }}/{{ moduleTitle }}/new/">Create new</a></p>
+            <table class="itemList" cellspacing="0">
+                <thead>
+                <tr>
+                    {% for property in listProperties %}
+                    <th>{{property.verbose_name}}</th>
+                    {% endfor %}
+                    <th>&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                <tr>
+                    {% for property in item.listProperties %}
+                    {% if forloop.first %}
+                    <td><a href="{{ urlPrefix }}/{{ moduleTitle }}/edit/{{ item.key }}/">{{ property.value }}</a></td>
+                    {% else %}
+                    <td>{{ property.value }}</td>
+                    {% endif %}
+                    {% endfor %}
+                    <td><a href="{{ urlPrefix }}/{{ moduleTitle }}/delete/{{ item.key }}/" onclick='return confirm("Are you sure?");'>Delete</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+{% endblock %}
