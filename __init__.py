@@ -65,6 +65,10 @@ class ModelAdmin(object):
             # Add extra attribute to property instance: propertyType.
             # This is used later by appengine_admin
             property.propertyType = property.__class__.__name__
+            # Cache referenced class name to avoid BadValueError when rendering model_item_edit.html template.
+            # Line like this could cause the exception: field.reference_class.kind
+            if property.propertyType == 'ReferenceProperty':
+                property.reference_class_kind = property.reference_class.kind()
             storage.append(property)
         
     def _attachListFields(self, item):

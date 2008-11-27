@@ -5,7 +5,6 @@
             {% if item %}
             <p class="createNew"><a href="{{ urlPrefix }}/{{ moduleTitle }}/new/">Create new</a></p>
             {% endif %}
-            <h2>Admin :: SimplePage</h2>
             <!-- Editable properties -->
             <form name="adminEditForm" method="post" action="{{ urlPrefix }}/{{moduleTitle}}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/">
             <table class="editForm">
@@ -32,7 +31,7 @@
                                 <option value="{{fkItem.key}}" {% ifequal fkItem.key field.value.key %}selected="selected"{%endifequal%}>{{fkItem}}</option>
                                 {% endfor %}
                             </select>
-                            <a href="{{ urlPrefix }}/{{field.reference_class.kind}}/new/" target="_blank">Add new</a>
+                            <a href="{{ urlPrefix }}/{{field.reference_class_kind}}/new/" target="_blank">Add new</a>
                             {% else %}
                             <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value }}{% endif %}"/>
                             {% endifequal %}
