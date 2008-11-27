@@ -7,6 +7,7 @@ from google.appengine.ext import db
 from google.appengine.api import datastore_errors
 from google.appengine.ext.webapp import template
 from google.appengine.ext import webapp
+from google.appengine.api import datastore_errors
 
 import authorized
 
@@ -77,7 +78,13 @@ class ModelAdmin(object):
         """
         item.listProperties = copy.deepcopy(self._listProperties)
         for property in item.listProperties:
-            property.value = getattr(item, property.name)
+            try:
+                property.value = getattr(item, property.name)
+            except datastore_errors.Error, exc:
+                # Error is raised if referenced property is deleted
+                # Catch the exception and set value to none
+                logging.warning('Error catched in ModelAdmin._attachListFields: %s' % exc)
+                property.value = None
         return item
 
 
@@ -256,7 +263,13 @@ class Admin(BaseRequestHandler):
         editProperties = copy.deepcopy(modelAdmin._editProperties)
         readonlyProperties = copy.deepcopy(modelAdmin._readonlyProperties)
         for i in range(len(editProperties)):
-            itemValue = getattr(item, editProperties[i].name)
+            try:
+                itemValue = getattr(item, editProperties[i].name)
+            except datastore_errors.Error, exc:
+                # Error is raised if referenced property is deleted
+                # Catch the exception and set value to none
+                logging.warning('Error catched while getting list item values: %s' % exc)
+                itemValue = None
             editProperties[i].value = itemValue
             logging.info("%s :: %s" % (editProperties[i].name, editProperties[i].value))
             if editProperties[i].propertyType == 'ReferenceProperty':
