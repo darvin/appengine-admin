@@ -6,8 +6,8 @@
 	}
 
 body {
-	font-family:"Trebuchet MS", Verdana, Helvetica, Arial, sans-serif;
-	font-size:12px;
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size:13px;
 	color:#666666;
 	background-color: #4d4d4d;
     text-align: center;
@@ -28,20 +28,19 @@ a {
 a:hover {
 	color:#4d4d4d;
 	}
+	
+input, textarea, select {
+    font-size: 0.85em;
+    padding: 2px 4px 2px 4px;
+}
 
 /* Structure */
 #wrapper {
 	width:95%;
 	margin: auto;
-	border-left: 5px solid #88cbd2;
-	border-right: 5px solid #88cbd2;
+	background-color: white;
     text-align: left;
 	}
-#inner_frame {
-    border-left: 10px solid #4d4d4d;
-	border-right: 10px solid #4d4d4d;
-    background-color: white;
-}
 #header {
 	height:5em;
 	border-bottom:10px solid #4d4d4d;
@@ -65,6 +64,7 @@ a:hover {
 #footer {
 	clear:both;
 	padding:15px 20px;
+	font-size: 0.85em;
 	}
 
 
@@ -153,6 +153,7 @@ td.delete_col {
 
 .okButton input {
     width: 4em;
+    font-size: 1em;
 }
 
 .createNew {
