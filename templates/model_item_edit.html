@@ -18,22 +18,22 @@
                     {% if field.choices %}
                     <select name="{{field.name}}">
                         {% for option in field.choices %}
-                        <option value="{{option}}" {% ifequal option field.value %}selected="selected"{%endifequal%}>{{option}}</option>
+                        <option value="{{option}}" {% ifequal option field.value %}selected="selected"{%endifequal%}>{{option|escape}}</option>
                         {% endfor %}
                     </select>
                     {% else %}
                         {% ifequal field.propertyType "TextProperty" %}
-                        <textarea name="{{field.name}}" rows="15" cols="40" style="width:450px;">{{ field.value }}</textarea>
+                        <textarea name="{{field.name}}" rows="15" cols="40" style="width:450px;">{{ field.value|escape }}</textarea>
                         {% else %}
                             {% ifequal field.propertyType "ReferenceProperty" %}
                             <select name="{{field.name}}">
                                 {% for fkItem in field.referencedItems %}
-                                <option value="{{fkItem.key}}" {% ifequal fkItem.key field.value.key %}selected="selected"{%endifequal%}>{{fkItem}}</option>
+                                <option value="{{fkItem.key}}" {% ifequal fkItem.key field.value.key %}selected="selected"{%endifequal%}>{{fkItem|escape}}</option>
                                 {% endfor %}
                             </select>
                             <a href="{{ urlPrefix }}/{{field.reference_class_kind}}/new/" target="_blank">Add new</a>
                             {% else %}
-                            <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value }}{% endif %}"/>
+                            <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value|escape }}{% endif %}"/>
                             {% endifequal %}
                         {% endifequal %}
                     {% endif %}
