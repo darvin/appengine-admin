@@ -33,7 +33,11 @@
                             </select>
                             <a href="{{ urlPrefix }}/{{field.reference_class_kind}}/new/" target="_blank">Add new</a>
                             {% else %}
-                            <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value|escape }}{% endif %}"/>
+                                {% ifequal field.propertyType "BooleanProperty" %}
+                                    <input type="checkbox" name="{{field.name}}" {% if field.value %}checked="checked"{%endif%} />
+                                {% else %}
+                                    <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value|escape }}{% endif %}"/>
+                                {% endifequal %}
                             {% endifequal %}
                         {% endifequal %}
                     {% endif %}
