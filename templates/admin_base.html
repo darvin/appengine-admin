@@ -4,50 +4,50 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>App admin panel</title>
 
-	<style type="text/css" media="screen">
-		@import url( /appengine_admin_media/style.css );
-	</style>
+    <style type="text/css" media="screen">
+        @import url( /appengine_admin_media/style.css );
+    </style>
 
 </head>
 <body>
 
 <div id="wrapper">
 
-		<div id="header">
-			<h1><a href="{{ urlPrefix }}/">App admin panel</a></h1>
-		</div>
+        <div id="header">
+            <h1><a href="{{ urlPrefix }}/">App admin panel</a></h1>
+        </div>
 
         {% if not errorpage %}
-		<div id="sidebar">
+        <div id="sidebar">
 
-			<p>Models</p>
-			<ul>
+            <p>Models</p>
+            <ul>
                 {% for modelName in models %}
-            	<li><a href="{{ urlPrefix }}/{{ modelName }}/list/">{{ modelName }}</a></li>
+                <li><a href="{{ urlPrefix }}/{{ modelName }}/list/">{{ modelName }}</a></li>
                 {% endfor %}
-			</ul>
-			<!--<p>Recent Actions</p>
-			<ul>
-				<li><a href="#">Recent entry one</a></li>
-				<li><a href="#">Recent entry two</a></li>
-				<li><a href="#">Recent entry three</a></li>
-				<li><a href="#">Recent entry four</a></li>
-			</ul>-->
+            </ul>
+            <!--<p>Recent Actions</p>
+            <ul>
+                <li><a href="#">Recent entry one</a></li>
+                <li><a href="#">Recent entry two</a></li>
+                <li><a href="#">Recent entry three</a></li>
+                <li><a href="#">Recent entry four</a></li>
+            </ul>-->
 
-		</div>
+        </div>
         {% endif %}
 
-		<div id="body">
-    		{% block content %}{% endblock %}
-		</div>
+        <div id="body">
+            {% block content %}{% endblock %}
+        </div>
 
 
-		<div id="footer">
-			<div id="copyright">
+        <div id="footer">
+            <div id="copyright">
                 <a href="http://code.google.com/p/appengine_admin/">Google Appengine Admin</a><br/>
-				Design by <a href="http://www.ginger-ninja.net/">Ginger Ninja</a>
-			</div>
-		</div>
+                Design by <a href="http://www.ginger-ninja.net/">Ginger Ninja</a>
+            </div>
+        </div>
 
 </div>
 
