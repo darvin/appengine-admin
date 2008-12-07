@@ -10,16 +10,16 @@
 
 </head>
 <body>
-	
+
 <div id="wrapper">
-		
+
 		<div id="header">
 			<h1><a href="{{ urlPrefix }}/">App admin panel</a></h1>
 		</div>
-		
+
         {% if not errorpage %}
 		<div id="sidebar">
-            
+
 			<p>Models</p>
 			<ul>
                 {% for modelName in models %}
@@ -33,22 +33,22 @@
 				<li><a href="#">Recent entry three</a></li>
 				<li><a href="#">Recent entry four</a></li>
 			</ul>-->
-			
+
 		</div>
         {% endif %}
-        
+
 		<div id="body">
     		{% block content %}{% endblock %}
 		</div>
 
-		
+
 		<div id="footer">
 			<div id="copyright">
                 <a href="http://code.google.com/p/appengine_admin/">Google Appengine Admin</a><br/>
 				Design by <a href="http://www.ginger-ninja.net/">Ginger Ninja</a>
 			</div>
 		</div>
-	
+
 </div>
 
 </body>

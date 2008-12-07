@@ -28,7 +28,7 @@ a {
 a:hover {
 	color:#4d4d4d;
 	}
-	
+
 input, textarea, select {
     font-size: 0.85em;
     padding: 2px 4px 2px 4px;
@@ -129,7 +129,7 @@ h3 {
 	text-align:center;
 	margin-top:20px;
 	}
-   
+
 /* Admin panel */
 table.itemList {
     border-left: 1px solid #ddd;

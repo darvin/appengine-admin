@@ -18,7 +18,7 @@ ADMIN_TEMPLATE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 't
 
 class Http404(Exception):
     code = 404
-    
+
 class Http500(Exception):
     code = 500
 
@@ -47,11 +47,11 @@ class ModelAdmin(object):
     editFields = ()
     readonlyFields = ()
     listGql = ''
-    
+
     def __init__(self):
         super(ModelAdmin, self).__init__()
         # Cache model name as string
-        self.modelName = str(self.model.kind())  
+        self.modelName = str(self.model.kind())
         self._listProperties = []
         self._editProperties = []
         self._readonlyProperties = []
@@ -59,7 +59,7 @@ class ModelAdmin(object):
         self._extractProperties(self.listFields, self._listProperties)
         self._extractProperties(self.editFields, self._editProperties)
         self._extractProperties(self.readonlyFields, self._readonlyProperties)
-        
+
     def _extractProperties(self, fieldNames, storage):
         for propertyName in fieldNames:
             property = getattr(self.model, propertyName)
@@ -71,7 +71,7 @@ class ModelAdmin(object):
             if property.propertyType == 'ReferenceProperty':
                 property.reference_class_kind = property.reference_class.kind()
             storage.append(property)
-        
+
     def _attachListFields(self, item):
         """Attaches property instances for list fields to given data entry.
             This is used in Admin class view methods.
@@ -94,7 +94,7 @@ class Admin(BaseRequestHandler):
         Example:
         ===
         import appengine_admin
-        
+
         application = webapp.WSGIApplication([
             ...
             # Admin pages
@@ -170,8 +170,8 @@ class Admin(BaseRequestHandler):
                 return
         # raise http error 404 (not found) if no match
         raise Http404()
-    
-    @staticmethod    
+
+    @staticmethod
     def _safeGetItem(model, key):
         """Get record of particular model by key.
             Raise Htt404 if not found or if key is not in correct format
@@ -183,7 +183,7 @@ class Admin(BaseRequestHandler):
         if item is None:
             raise Http404()
         return item
-        
+
 
     @authorized.role("admin")
     def index_get(self):
@@ -207,7 +207,7 @@ class Admin(BaseRequestHandler):
             'moduleTitle': modelAdmin.modelName,
             'listProperties': modelAdmin._listProperties,
             'items': map(modelAdmin._attachListFields, modelAdmin.model.gql(modelAdmin.listGql))
-        }))        
+        }))
 
     @authorized.role("admin")
     def new_get(self, modelName):
@@ -278,7 +278,7 @@ class Admin(BaseRequestHandler):
             itemValue = getattr(item, readonlyProperties[i].name)
             readonlyProperties[i].value = itemValue
             logging.info("%s :: %s" % (readonlyProperties[i].name, readonlyProperties[i].value))
-            
+
         templateValues = {
             'models': self.models,
             'urlPrefix': self.urlPrefix,

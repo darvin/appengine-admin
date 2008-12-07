@@ -27,4 +27,9 @@
                 {% endfor %}
                 </tbody>
             </table>
+            <!-- paging -->
+            <p>
+                <a href="?page={{page.first}}">First</a> <a href="?page={{page.prev}}">Previous</a> {{page.id}} of {{page.maxpages}} <a href="?page={{page.next}}">Next</a> <a href="?page={{page.last}}">Last</a>
+            </p>
+            <!-- EOF paging -->
 {% endblock %}
