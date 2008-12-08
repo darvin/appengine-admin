@@ -2,6 +2,7 @@ import os.path
 import logging
 import copy
 import re
+import math
 
 from google.appengine.ext import db
 from google.appengine.api import datastore_errors
@@ -14,6 +15,8 @@ import authorized
 # Path to admin template directory
 # Overwrite this variable if you want to use custom templates
 ADMIN_TEMPLATE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
+
+ADMIN_ITEMS_PER_PAGE = 2
 
 
 class Http404(Exception):
@@ -201,12 +204,20 @@ class Admin(BaseRequestHandler):
         """
         modelAdmin = getModelAdmin(modelName)
         path = os.path.join(ADMIN_TEMPLATE_DIR, 'model_item_list.html')
+        page = Page(
+                modelAdmin = modelAdmin,
+                itemsPerPage = ADMIN_ITEMS_PER_PAGE,
+                currentPage = self.request.get('page', 1)
+            )
+        items = modelAdmin.model.gql(modelAdmin.listGql)
+        #items = page.getDataForPage()
         self.response.out.write(template.render(path, {
             'models': self.models,
             'urlPrefix': self.urlPrefix,
             'moduleTitle': modelAdmin.modelName,
             'listProperties': modelAdmin._listProperties,
-            'items': map(modelAdmin._attachListFields, modelAdmin.model.gql(modelAdmin.listGql))
+            'items': map(modelAdmin._attachListFields, items),
+            'page': page,
         }))
 
     @authorized.role("admin")
@@ -321,6 +332,43 @@ class Admin(BaseRequestHandler):
         item = self._safeGetItem(modelAdmin.model, key)
         item.delete()
         self.redirect("%s/%s/list/" % (self.urlPrefix, modelAdmin.modelName))
+
+
+class Page(object):
+    def __init__(self, modelAdmin, itemsPerPage = 20, currentPage = 1):
+        self.modelAdmin = modelAdmin
+        self.model = self.modelAdmin.model
+        self.itemsPerPage = itemsPerPage
+        self.current = currentPage
+        self.setPageNumbers()
+
+    def setPageNumbers(self):
+        logging.info('COUNT: %s' % float(self.model.all().count()))
+        self.maxpages = int(math.ceil(float(self.model.all().count()) / float(self.itemsPerPage)))
+        if self.maxpages < 1:
+            self.maxpages = 1
+        logging.info("Maxpages: %s" % self.maxpages)
+        # validate current page number
+        if self.current > self.maxpages or self.current < 1:
+            logging.info("TF: %s" % (int(self.current) < int(self.maxpages)))
+            logging.info("TF: %s < %s" % (self.current, self.maxpages))
+            self.current = 1
+        if self.current > 1:
+            self.prev = self.current - 1
+        else:
+            self.prev = None
+        if self.current < self.maxpages:
+            self.next = self.current + 1
+        else:
+            self.next = None
+        self.first = 1
+        self.last = self.maxpages
+
+    def getDataForPage(self):
+        offset = int((self.current - 1) * self.itemsPerPage)
+        query = self.modelAdmin.listGql + ' LIMIT %i, %i' % (offset, self.itemsPerPage)
+        logging.info("Paging Q: %s" % query)
+        return self.model.gql(query)
 
 
 # holds model_name -> ModelAdmin_instance mapping.
