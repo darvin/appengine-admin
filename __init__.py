@@ -10,13 +10,13 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext import webapp
 from google.appengine.api import datastore_errors
 
-import authorized
+from . import authorized
 
 # Path to admin template directory
 # Overwrite this variable if you want to use custom templates
 ADMIN_TEMPLATE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 
-ADMIN_ITEMS_PER_PAGE = 20
+ADMIN_ITEMS_PER_PAGE = 50
 
 
 class Http404(Exception):
