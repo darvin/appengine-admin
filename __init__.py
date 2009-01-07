@@ -346,8 +346,9 @@ class Page(object):
 
     def setPageNumbers(self):
         nItems = float(self.model.all().count())
+        logging.info('Paging: Items per page: %s' % self.itemsPerPage)
         logging.info('Paging: Number of items %s' % int(nItems))
-        self.maxpages = int(math.ceil(nItems) / float(self.itemsPerPage))
+        self.maxpages = int(math.ceil(nItems / float(self.itemsPerPage)))
         if self.maxpages < 1:
             self.maxpages = 1
         # validate current page number
