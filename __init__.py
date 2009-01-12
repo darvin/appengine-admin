@@ -254,7 +254,10 @@ class Admin(BaseRequestHandler):
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
-                data_type = unicode
+                if property.propertyType == 'BlobProperty':
+                    data_type = str
+                else:
+                    data_type = unicode
             if issubclass(data_type, db.Model):
                 attributes[property.name] = data_type.get(self.request.get(property.name))
             else:
@@ -314,7 +317,10 @@ class Admin(BaseRequestHandler):
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
-                data_type = unicode
+                if property.propertyType == 'BlobProperty':
+                    data_type = str
+                else:
+                    data_type = unicode
             if issubclass(data_type, db.Model):
                 value = data_type.get(self.request.get(property.name))
             else:

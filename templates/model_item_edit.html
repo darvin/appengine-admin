@@ -10,7 +10,12 @@
 </p>
 {% endif %}
 <!-- Editable properties -->
-<form name="adminEditForm" method="post" action="{{ urlPrefix }}/{{moduleTitle}}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/">
+<form name="adminEditForm" method="post" 
+    action="{{ urlPrefix }}/{{moduleTitle}}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/"
+    {% for field in editProperties %}{% ifequal field.propertyType "TextProperty" %}
+    enctype="multipart/form-data"
+    {% endifequal %}{% endfor %}
+    >
 <table class="editForm">
     <tr>
         <td colspan="2"><h3>Editable properties</h3></td>
@@ -40,7 +45,11 @@
                     {% ifequal field.propertyType "BooleanProperty" %}
                         <input type="checkbox" name="{{field.name}}" {% if field.value %}checked="checked"{%endif%} />
                     {% else %}
-                        <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value|escape }}{% endif %}"/>
+                        {% ifequal field.propertyType "BlobProperty" %}
+                            {% if field.value %}File already uploaded.{% endif %}<input type="file" name="{{field.name}}" />
+                        {% else %}
+                            <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value|escape }}{% endif %}"/>
+                        {% endifequal %}
                     {% endifequal %}
                 {% endifequal %}
             {% endifequal %}
