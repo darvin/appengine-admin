@@ -12,7 +12,7 @@
 <!-- Editable properties -->
 <form name="adminEditForm" method="post" 
     action="{{ urlPrefix }}/{{moduleTitle}}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/"
-    {% for field in editProperties %}{% ifequal field.propertyType "TextProperty" %}
+    {% for field in editProperties %}{% ifequal field.propertyType "BlobProperty" %}
     enctype="multipart/form-data"
     {% endifequal %}{% endfor %}
     >
