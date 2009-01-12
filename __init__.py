@@ -250,7 +250,7 @@ class Admin(BaseRequestHandler):
             logging.info("Property: %s" % property.name)
             # detect preferred data type of property
             data_type = property.data_type
-            logging.info("  Prperty type: %s" % data_type)
+            logging.info("Property type: %s" % data_type)
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
