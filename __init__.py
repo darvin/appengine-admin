@@ -36,6 +36,25 @@ class BaseRequestHandler(webapp.RequestHandler):
             super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
 
 
+class PropertyWrapper(object):
+    def __init__(self, prop, name):
+        logging.info("Caching info about property '%s'" % name)
+        self.prop = prop
+        self.name = name
+        self.typeName = prop.__class__.__name__
+        logging.info("  Property type: %s" % self.typeName)
+        # Cache referenced class name to avoid BadValueError when rendering model_item_edit.html template.
+        # Line like this could cause the exception: field.reference_class.kind
+        if self.typeName == 'ReferenceProperty':
+            self.reference_kind = prop.reference_class.kind()
+        # This might fail in case if prop is instancemethod
+        self.verbose_name = getattr(prop, 'verbose_name', self.name)
+        # set verbose_name to at least something represenative
+        if not self.verbose_name:
+            self.verbose_name = self.name
+        self.value = ''
+
+
 class ModelAdmin(object):
     """Use this class as base for your model registration to admin site.
         Available settings:
@@ -65,29 +84,21 @@ class ModelAdmin(object):
 
     def _extractProperties(self, fieldNames, storage):
         for propertyName in fieldNames:
-            property = getattr(self.model, propertyName)
-            # Add extra attribute to property instance: propertyType.
-            # This is used later by appengine_admin
-            property.propertyType = property.__class__.__name__
-            # Cache referenced class name to avoid BadValueError when rendering model_item_edit.html template.
-            # Line like this could cause the exception: field.reference_class.kind
-            if property.propertyType == 'ReferenceProperty':
-                property.reference_class_kind = property.reference_class.kind()
-            storage.append(property)
+            storage.append(PropertyWrapper(getattr(self.model, propertyName), propertyName))
 
     def _attachListFields(self, item):
         """Attaches property instances for list fields to given data entry.
             This is used in Admin class view methods.
         """
-        item.listProperties = copy.deepcopy(self._listProperties)
-        for property in item.listProperties:
+        item.listProperties = self._listProperties[:]
+        for prop in item.listProperties:
             try:
-                property.value = getattr(item, property.name)
+                prop.value = getattr(item, prop.name)
             except datastore_errors.Error, exc:
                 # Error is raised if referenced property is deleted
                 # Catch the exception and set value to none
                 logging.warning('Error catched in ModelAdmin._attachListFields: %s' % exc)
-                property.value = None
+                prop.value = None
         return item
 
 
@@ -227,8 +238,8 @@ class Admin(BaseRequestHandler):
         modelAdmin = getModelAdmin(modelName)
         editProperties = copy.deepcopy(modelAdmin._editProperties)
         for property in editProperties:
-            if property.propertyType == 'ReferenceProperty':
-                property.referencedItems = property.reference_class.all()
+            if property.typeName == 'ReferenceProperty':
+                property.referencedItems = property.prop.reference_class.all()
         templateValues = {
             'models': self.models,
             'urlPrefix': self.urlPrefix,
@@ -249,12 +260,12 @@ class Admin(BaseRequestHandler):
         for property in modelAdmin._editProperties:
             logging.info("Property: %s" % property.name)
             # detect preferred data type of property
-            data_type = property.data_type
+            data_type = property.prop.data_type
             logging.info("Property type: %s" % data_type)
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
-                if property.propertyType == 'BlobProperty':
+                if property.typeName == 'BlobProperty':
                     data_type = str
                 else:
                     data_type = unicode
@@ -286,8 +297,8 @@ class Admin(BaseRequestHandler):
                 itemValue = None
             editProperties[i].value = itemValue
             logging.info("%s :: %s" % (editProperties[i].name, editProperties[i].value))
-            if editProperties[i].propertyType == 'ReferenceProperty':
-                editProperties[i].referencedItems = editProperties[i].reference_class.all()
+            if editProperties[i].typeName == 'ReferenceProperty':
+                editProperties[i].referencedItems = editProperties[i].prop.reference_class.all()
         for i in range(len(readonlyProperties)):
             itemValue = getattr(item, readonlyProperties[i].name)
             readonlyProperties[i].value = itemValue
@@ -313,11 +324,11 @@ class Admin(BaseRequestHandler):
         item = self._safeGetItem(modelAdmin.model, key)
         for property in modelAdmin._editProperties:
             # detect preferred data type of property
-            data_type = property.data_type
+            data_type = property.prop.data_type
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
-                if property.propertyType == 'BlobProperty':
+                if property.typeName == 'BlobProperty':
                     data_type = str
                 else:
                     data_type = unicode
