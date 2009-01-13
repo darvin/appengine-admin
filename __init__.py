@@ -3,6 +3,7 @@ import logging
 import copy
 import re
 import math
+import pickle
 
 from google.appengine.ext import db
 from google.appengine.api import datastore_errors
@@ -17,6 +18,8 @@ from . import authorized
 ADMIN_TEMPLATE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 
 ADMIN_ITEMS_PER_PAGE = 50
+
+BLOB_FIELD_META_SUFFIX = '_meta'
 
 
 class Http404(Exception):
@@ -53,6 +56,9 @@ class PropertyWrapper(object):
         if not self.verbose_name:
             self.verbose_name = self.name
         self.value = ''
+    
+    def __deepcopy__(self, memo):
+        return PropertyWrapper(self.prop, self.name)
 
 
 class ModelAdmin(object):
@@ -90,7 +96,7 @@ class ModelAdmin(object):
         """Attaches property instances for list fields to given data entry.
             This is used in Admin class view methods.
         """
-        item.listProperties = self._listProperties[:]
+        item.listProperties = copy.deepcopy(self._listProperties[:])
         for prop in item.listProperties:
             try:
                 prop.value = getattr(item, prop.name)
@@ -137,6 +143,7 @@ class Admin(BaseRequestHandler):
             [r'^/([^/]+)/new/$', self.new_get],
             [r'^/([^/]+)/edit/([^/]+)/$', self.edit_get],
             [r'^/([^/]+)/delete/([^/]+)/$', self.delete_get],
+            [r'^/([^/]+)/get_blob_contents/([^/]+)/([^/]+)/$', self.get_blob_contents],
         ]
         self.postRegexps = [
             [r'^/([^/]+)/new/$', self.new_post],
@@ -237,9 +244,9 @@ class Admin(BaseRequestHandler):
         """
         modelAdmin = getModelAdmin(modelName)
         editProperties = copy.deepcopy(modelAdmin._editProperties)
-        for property in editProperties:
-            if property.typeName == 'ReferenceProperty':
-                property.referencedItems = property.prop.reference_class.all()
+        for field in editProperties:
+            if field.typeName == 'ReferenceProperty':
+                field.referencedItems = field.prop.reference_class.all()
         templateValues = {
             'models': self.models,
             'urlPrefix': self.urlPrefix,
@@ -257,22 +264,28 @@ class Admin(BaseRequestHandler):
         """
         modelAdmin = getModelAdmin(modelName)
         attributes = {}
-        for property in modelAdmin._editProperties:
-            logging.info("Property: %s" % property.name)
+        for field in modelAdmin._editProperties:
+            logging.info("Property: %s" % field.name)
             # detect preferred data type of property
-            data_type = property.prop.data_type
+            data_type = field.prop.data_type
             logging.info("Property type: %s" % data_type)
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
-                if property.typeName == 'BlobProperty':
-                    data_type = str
-                else:
-                    data_type = unicode
+                data_type = unicode
+            if field.typeName == 'BlobProperty':
+                data_type = str
+                uploadedFile = self.request.POST.get(field.name)
+                metaData = {
+                    'Content-Type': uploadedFile.type,
+                    'File-Name': uploadedFile.filename
+                }
+                logging.info("Caching meta data for BlobProperty: %r" % metaData)
+                attributes[field.name + BLOB_FIELD_META_SUFFIX] = pickle.dumps(metaData)
             if issubclass(data_type, db.Model):
-                attributes[property.name] = data_type.get(self.request.get(property.name))
+                attributes[field.name] = data_type.get(self.request.get(field.name))
             else:
-                attributes[property.name] = data_type(self.request.get(property.name))
+                attributes[field.name] = data_type(self.request.get(field.name))
         item = modelAdmin.model(**attributes)
         item.put()
         self.redirect("%s/%s/edit/%s/" % (self.urlPrefix, modelAdmin.modelName, item.key()))
@@ -296,7 +309,10 @@ class Admin(BaseRequestHandler):
                 logging.warning('Error catched while getting list item values: %s' % exc)
                 itemValue = None
             editProperties[i].value = itemValue
-            logging.info("%s :: %s" % (editProperties[i].name, editProperties[i].value))
+            if editProperties[i].typeName == 'BlobProperty':
+                logging.info("%s :: some value :)" % editProperties[i].name)
+            else:
+                logging.info("%s :: %s" % (editProperties[i].name, editProperties[i].value))
             if editProperties[i].typeName == 'ReferenceProperty':
                 editProperties[i].referencedItems = editProperties[i].prop.reference_class.all()
         for i in range(len(readonlyProperties)):
@@ -322,21 +338,27 @@ class Admin(BaseRequestHandler):
         """
         modelAdmin = getModelAdmin(modelName)
         item = self._safeGetItem(modelAdmin.model, key)
-        for property in modelAdmin._editProperties:
-            # detect preferred data type of property
-            data_type = property.prop.data_type
+        for field in modelAdmin._editProperties:
+            # detect preferred data type of field
+            data_type = field.prop.data_type
             # Since basestring can not be directly instantiated use unicode everywhere
             # Not yet decided what to do if non unicode data received.
             if data_type is basestring:
-                if property.typeName == 'BlobProperty':
-                    data_type = str
-                else:
-                    data_type = unicode
+                data_type = unicode
+            if field.typeName == 'BlobProperty':
+                data_type = str
+                uploadedFile = self.request.POST.get(field.name)
+                metaData = {
+                    'Content-Type': uploadedFile.type,
+                    'File-Name': uploadedFile.filename
+                }
+                logging.info("Caching meta data for BlobProperty: %r" % metaData)
+                setattr(item, field.name + BLOB_FIELD_META_SUFFIX, pickle.dumps(metaData))
             if issubclass(data_type, db.Model):
-                value = data_type.get(self.request.get(property.name))
+                value = data_type.get(self.request.get(field.name))
             else:
-                value = data_type(self.request.get(property.name))
-            setattr(item, property.name, value)
+                value = data_type(self.request.get(field.name))
+            setattr(item, field.name, value)
         item.put()
         self.redirect("%s/%s/edit/%s/" % (self.urlPrefix, modelAdmin.modelName, item.key()))
 
@@ -349,6 +371,22 @@ class Admin(BaseRequestHandler):
         item = self._safeGetItem(modelAdmin.model, key)
         item.delete()
         self.redirect("%s/%s/list/" % (self.urlPrefix, modelAdmin.modelName))
+    
+    @authorized.role("admin")    
+    def get_blob_contents(self, modelName, fieldName, key):
+        """Returns blob field contents to user for downloading.
+        """
+        modelAdmin = getModelAdmin(modelName)
+        item = self._safeGetItem(modelAdmin.model, key)
+        data = getattr(item, fieldName, None)
+        if data is None:
+            raise Http404()
+        else:
+            props = _getBlobProperties(item, fieldName)
+            if props:
+                self.response.headers['Content-Type'] = props['Content-Type']
+                logging.info("Setting content type to %s" % props['Content-Type'])
+            self.response.out.write(data)
 
 
 class Page(object):
@@ -412,3 +450,10 @@ def getModelAdmin(modelName):
         return _modelRegister[modelName]
     except KeyError:
         raise Http404()
+
+def _getBlobProperties(item, fieldName):
+    props = getattr(item, fieldName + BLOB_FIELD_META_SUFFIX, None)
+    if props:
+        return pickle.loads(props)
+    else:
+        return None
