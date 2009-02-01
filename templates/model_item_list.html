@@ -17,9 +17,25 @@
                 <tr>
                     {% for property in item.listProperties %}
                     {% if forloop.first %}
-                    <td><a href="{{ urlPrefix }}/{{ moduleTitle }}/edit/{{ item.key }}/">{{ property.value|escape }}</a></td>
+                    <td><a href="{{ urlPrefix }}/{{ moduleTitle }}/edit/{{ item.key }}/">
+                        {% ifequal property.typeName "BlobProperty" %}
+                        Binary content
+                        {% else %}
+                        {{ property.value|escape }}
+                        {% endifequal %}
+                    </a></td>
                     {% else %}
-                    <td>{{ property.value|escape }}</td>
+                    <td>
+                        {% ifequal property.typeName "BlobProperty" %}
+                            {% if property.value %}
+                                <a href="{{urlPrefix}}/{{moduleTitle}}/get_blob_contents/{{property.name}}/{{ item.key }}/">File uploaded: {{property.meta.File_Name}}</a>
+                            {% else %}
+                            None
+                            {% endif %}
+                        {% else %}
+                            {{ property.value|escape }}
+                        {% endifequal %}
+                    </td>
                     {% endif %}
                     {% endfor %}
                     <td><a href="{{ urlPrefix }}/{{ moduleTitle }}/delete/{{ item.key }}/" onclick='return confirm("Are you sure?");'>Delete</a></td>

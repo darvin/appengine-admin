@@ -100,6 +100,8 @@ class ModelAdmin(object):
         for prop in item.listProperties:
             try:
                 prop.value = getattr(item, prop.name)
+                if prop.typeName == 'BlobProperty':
+                    prop.meta = _getBlobProperties(item, prop.name)
             except datastore_errors.Error, exc:
                 # Error is raised if referenced property is deleted
                 # Catch the exception and set value to none
