@@ -310,7 +310,8 @@ class Admin(BaseRequestHandler):
                 itemValue = None
             editProperties[i].value = itemValue
             if editProperties[i].typeName == 'BlobProperty':
-                logging.info("%s :: some value :)" % editProperties[i].name)
+                logging.info("%s :: Binary content" % editProperties[i].name)
+                editProperties[i].meta = _getBlobProperties(item, editProperties[i].name)
             else:
                 logging.info("%s :: %s" % (editProperties[i].name, editProperties[i].value))
             if editProperties[i].typeName == 'ReferenceProperty':
@@ -318,7 +319,11 @@ class Admin(BaseRequestHandler):
         for i in range(len(readonlyProperties)):
             itemValue = getattr(item, readonlyProperties[i].name)
             readonlyProperties[i].value = itemValue
-            logging.info("%s :: %s" % (readonlyProperties[i].name, readonlyProperties[i].value))
+            if readonlyProperties[i].typeName == 'BlobProperty':
+                logging.info("%s :: Binary content" % readonlyProperties[i].name)
+                readonlyProperties[i].meta = _getBlobProperties(item, readonlyProperties[i].name)
+            else:
+                logging.info("%s :: %s" % (readonlyProperties[i].name, readonlyProperties[i].value))
 
         templateValues = {
             'models': self.models,
@@ -348,12 +353,14 @@ class Admin(BaseRequestHandler):
             if field.typeName == 'BlobProperty':
                 data_type = str
                 uploadedFile = self.request.POST.get(field.name)
-                metaData = {
-                    'Content-Type': uploadedFile.type,
-                    'File-Name': uploadedFile.filename
-                }
-                logging.info("Caching meta data for BlobProperty: %r" % metaData)
-                setattr(item, field.name + BLOB_FIELD_META_SUFFIX, pickle.dumps(metaData))
+                metaFieldName = field.name + BLOB_FIELD_META_SUFFIX
+                if getattr(item, metaFieldName, None):
+                    metaData = {
+                        'Content_Type': uploadedFile.type,
+                        'File_Name': uploadedFile.filename
+                    }
+                    logging.info("Caching meta data for BlobProperty: %r" % metaData)
+                    setattr(item, metaFieldName, pickle.dumps(metaData))
             if issubclass(data_type, db.Model):
                 value = data_type.get(self.request.get(field.name))
             else:
@@ -384,8 +391,11 @@ class Admin(BaseRequestHandler):
         else:
             props = _getBlobProperties(item, fieldName)
             if props:
-                self.response.headers['Content-Type'] = props['Content-Type']
-                logging.info("Setting content type to %s" % props['Content-Type'])
+                self.response.headers['Content-Type'] = props['Content_Type']
+                self.response.headers['Content-Disposition'] = 'inline; filename=%s' % props['File_Name']
+                logging.info("Setting content type to %s" % props['Content_Type'])
+            else:
+                self.response.headers['Content-Type'] = 'application/octet-stream'
             self.response.out.write(data)
 
 

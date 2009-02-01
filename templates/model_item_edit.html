@@ -47,7 +47,7 @@
                     {% else %}
                         {% ifequal field.typeName "BlobProperty" %}
                             {% if field.value %}
-                                <a href="{{urlPrefix}}/{{moduleTitle}}/get_blob_contents/{{field.name}}/{{ item.key }}/">File already uploaded</a>
+                                <a href="{{urlPrefix}}/{{moduleTitle}}/get_blob_contents/{{field.name}}/{{ item.key }}/">File uploaded: {{field.meta.File_Name}}</a>
                             {% endif %}
                             <input type="file" name="{{field.name}}" />
                         {% else %}
@@ -76,7 +76,20 @@
     {% if item %}
     <!-- Readonly properties -->
     {% for field in readonlyProperties %}
-    <tr><td>{{ field.verbose_name }}:</td><td>{{ field.value }}</td></tr>
+        <tr>
+            <td>{{ field.verbose_name }}:</td>
+            <td>
+            {% ifequal field.typeName "BlobProperty" %}
+                {% if field.value %}
+                <a href="{{urlPrefix}}/{{moduleTitle}}/get_blob_contents/{{field.name}}/{{ item.key }}/">File uploaded: {{field.meta.File_Name}}</a>
+                {% else %}
+                None
+                {% endif %}
+            {% else %}
+            {{ field.value }}
+            {% endifequal %}
+            </td>
+        </tr>
     {% endfor %}
     {% endif %}
 </table>
