@@ -277,13 +277,21 @@ class Admin(BaseRequestHandler):
                 data_type = unicode
             if field.typeName == 'BlobProperty':
                 data_type = str
-                uploadedFile = self.request.POST.get(field.name)
-                metaData = {
-                    'Content-Type': uploadedFile.type,
-                    'File-Name': uploadedFile.filename
-                }
-                logging.info("Caching meta data for BlobProperty: %r" % metaData)
-                attributes[field.name + BLOB_FIELD_META_SUFFIX] = pickle.dumps(metaData)
+                metaFieldName = field.name + BLOB_FIELD_META_SUFFIX
+                if getattr(modelAdmin.model, metaFieldName, None):
+                    uploadedFile = self.request.POST.get(field.name)
+                    if uploadedFile != u'':
+                        metaData = {
+                            'Content_Type': uploadedFile.type,
+                            'File_Name': uploadedFile.filename
+                        }
+                        logging.info("Caching meta data for BlobProperty: %r" % metaData)
+                        attributes[field.name + BLOB_FIELD_META_SUFFIX] = pickle.dumps(metaData)
+                else:
+                    logging.info(
+                        'Cache field "%(metaFieldName)s" for blob property "%(propertyName)s" not found. Add field "%(metaFieldName)s" to model "%(modelName)s" if you want to store meta info about the uploaded file',
+                        {'metaFieldName': metaFieldName, 'propertyName' : field.name, 'modelName': modelAdmin.modelName}
+                    )
             if issubclass(data_type, db.Model):
                 attributes[field.name] = data_type.get(self.request.get(field.name))
             else:
@@ -355,14 +363,20 @@ class Admin(BaseRequestHandler):
             if field.typeName == 'BlobProperty':
                 data_type = str
                 uploadedFile = self.request.POST.get(field.name)
-                metaFieldName = field.name + BLOB_FIELD_META_SUFFIX
-                if getattr(item, metaFieldName, None):
-                    metaData = {
-                        'Content_Type': uploadedFile.type,
-                        'File_Name': uploadedFile.filename
-                    }
-                    logging.info("Caching meta data for BlobProperty: %r" % metaData)
-                    setattr(item, metaFieldName, pickle.dumps(metaData))
+                if uploadedFile != u'':
+                    metaFieldName = field.name + BLOB_FIELD_META_SUFFIX
+                    if getattr(modelAdmin.model, metaFieldName, None):
+                        metaData = {
+                            'Content_Type': uploadedFile.type,
+                            'File_Name': uploadedFile.filename
+                        }
+                        logging.info("Caching meta data for BlobProperty: %r" % metaData)
+                        setattr(item, metaFieldName, pickle.dumps(metaData))
+                    else:
+                        logging.info(
+                            'Cache field "%(metaFieldName)s" for blob property "%(propertyName)s" not found. Add field "%(metaFieldName)s" to model "%(modelName)s" if you want to store meta info about the uploaded file',
+                            {'metaFieldName': metaFieldName, 'propertyName' : field.name, 'modelName': modelAdmin.modelName}
+                        )
             if issubclass(data_type, db.Model):
                 value = data_type.get(self.request.get(field.name))
             else:
