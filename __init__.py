@@ -102,6 +102,8 @@ class ModelAdmin(object):
                 prop.value = getattr(item, prop.name)
                 if prop.typeName == 'BlobProperty':
                     prop.meta = _getBlobProperties(item, prop.name)
+                    if prop.value:
+                        prop.value = True # release the memory
             except datastore_errors.Error, exc:
                 # Error is raised if referenced property is deleted
                 # Catch the exception and set value to none
@@ -307,7 +309,6 @@ class Admin(BaseRequestHandler):
         """
         modelAdmin = getModelAdmin(modelName)
         item = self._safeGetItem(modelAdmin.model, key)
-        item_values = {}
         editProperties = copy.deepcopy(modelAdmin._editProperties)
         readonlyProperties = copy.deepcopy(modelAdmin._readonlyProperties)
         for i in range(len(editProperties)):
@@ -322,6 +323,8 @@ class Admin(BaseRequestHandler):
             if editProperties[i].typeName == 'BlobProperty':
                 logging.info("%s :: Binary content" % editProperties[i].name)
                 editProperties[i].meta = _getBlobProperties(item, editProperties[i].name)
+                if editProperties[i].value:
+                    editProperties[i].value = True # release the memory
             else:
                 logging.info("%s :: %s" % (editProperties[i].name, editProperties[i].value))
             if editProperties[i].typeName == 'ReferenceProperty':
@@ -332,6 +335,8 @@ class Admin(BaseRequestHandler):
             if readonlyProperties[i].typeName == 'BlobProperty':
                 logging.info("%s :: Binary content" % readonlyProperties[i].name)
                 readonlyProperties[i].meta = _getBlobProperties(item, readonlyProperties[i].name)
+                if readonlyProperties[i].value:
+                    readonlyProperties[i].value = True # release the memory
             else:
                 logging.info("%s :: %s" % (readonlyProperties[i].name, readonlyProperties[i].value))
 
