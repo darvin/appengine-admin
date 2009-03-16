@@ -11,55 +11,13 @@
 {% endif %}
 <!-- Editable properties -->
 <form name="adminEditForm" method="post"
-    action="{{ urlPrefix }}/{{moduleTitle}}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/"
-    {% for field in editProperties %}{% ifequal field.typeName "BlobProperty" %}
-    enctype="multipart/form-data"
-    {% endifequal %}{% endfor %}
-    >
+    action="{{ urlPrefix }}/{{ moduleTitle }}/{% if item %}edit/{{ item.key }}{% else %}new{% endif %}/"
+    {% if editForm.enctype %}enctype="{{ editForm.enctype }}"{% endif %}>
 <table class="editForm">
     <tr>
         <td colspan="2"><h3>Editable properties</h3></td>
     </tr>
-    {% for field in editProperties %}
-    <tr>
-        <td>{{field.verbose_name}}:</td>
-        <td>
-        {% if field.prop.choices %}
-        <select name="{{field.name}}">
-            {% for option in field.prop.choices %}
-            <option value="{{option}}" {% ifequal option field.value %}selected="selected"{%endifequal%}>{{option|escape}}</option>
-            {% endfor %}
-        </select>
-        {% else %}
-            {% ifequal field.typeName "TextProperty" %}
-            <textarea name="{{field.name}}" rows="15" cols="40" style="width:450px;">{{ field.value|escape }}</textarea>
-            {% else %}
-                {% ifequal field.typeName "ReferenceProperty" %}
-                <select name="{{field.name}}">
-                    {% for fkItem in field.referencedItems %}
-                    <option value="{{fkItem.key}}" {% ifequal fkItem.key field.value.key %}selected="selected"{%endifequal%}>{{fkItem|escape}}</option>
-                    {% endfor %}
-                </select>
-                <a href="{{ urlPrefix }}/{{field.reference_kind}}/new/" target="_blank">Add new</a>
-                {% else %}
-                    {% ifequal field.typeName "BooleanProperty" %}
-                        <input type="checkbox" name="{{field.name}}" {% if field.value %}checked="checked"{%endif%} />
-                    {% else %}
-                        {% ifequal field.typeName "BlobProperty" %}
-                            {% if field.value %}
-                                <a href="{{urlPrefix}}/{{moduleTitle}}/get_blob_contents/{{field.name}}/{{ item.key }}/">File uploaded: {{field.meta.File_Name}}</a>
-                            {% endif %}
-                            <input type="file" name="{{field.name}}" />
-                        {% else %}
-                            <input type="text" name="{{field.name}}" value="{% if item %}{{ field.value|escape }}{% endif %}"/>
-                        {% endifequal %}
-                    {% endifequal %}
-                {% endifequal %}
-            {% endifequal %}
-        {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+    {{ editForm }}
     <tr>
         <td>&nbsp;</td>
         <td>
