@@ -4,6 +4,8 @@ Taken from http://django-gae-helpers.googlecode.com/svn/trunk/gaeadapter.py
 """
 
 from google.appengine.ext import db
+from google.appengine.api.datastore_errors import BadValueError
+
 from . import admin_forms
 from . import admin_widgets
 
@@ -177,3 +179,51 @@ class ManyToManyProperty(db.ListProperty):
                     'required': False}
         defaults.update(kwargs)
         return super(ManyToManyProperty, self).get_form_field(**defaults)
+
+        
+class StringListChoicesProperty(db.StringListProperty):
+    """Wraps StringListProperty for using SelectMultiple widget instead of default Textarea
+    """
+    def validate(self, value):
+        """Performs full validation.
+            Does customized check for values if choices are defined.
+        """
+        if self.empty(value):
+            if self.required:
+                raise BadValueError('Property %s is required' % self.name)
+        else:
+            # In case of StringListProperty it is necessary that all selected items
+            # are between defined choices.
+            if self.choices:
+                for item in value:
+                    if item not in self.choices:
+                        raise BadValueError('All selected items for property %s must be between predefined choices %s. Current value: %s' %
+                            (self.name, self.choices, value))
+        if self.validator is not None:
+            self.validator(value)
+        if value is not None:
+            if not isinstance(value, list):
+                raise BadValueError('Property %s must be a list' % self.name)
+
+        value = self.validate_list_contents(value)
+        return value
+    
+    def get_form_field(self, **kwargs):
+        """Return a Django form field appropriate for a StringList property.
+
+        This defaults to a Textarea widget with a blank initial value.
+        """
+        defaults = {'form_class': admin_forms.MultipleChoiceField,
+            'choices': self.choices,
+            'widget': admin_widgets.SelectMultiple,
+        }
+        defaults.update(kwargs)
+        return super(StringListChoicesProperty, self).get_form_field(**defaults)
+    
+    def get_value_for_form(self, instance):
+        value = super(StringListChoicesProperty, self).get_value_for_form(instance)
+        if not value:
+            return None
+        if isinstance(value, basestring):
+            value = value.splitlines()
+        return value

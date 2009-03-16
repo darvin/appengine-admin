@@ -229,8 +229,6 @@ class ModelMultipleChoiceField(forms.MultipleChoiceField):
 
     def _update_widget_choices(self):
         """Helper to copy the choices to the widget."""
-        logging.info("WIDGET: %s" % repr(self.widget))
-        logging.info("CHOICES: %s" % repr(self.widget.choices))
         self.widget.choices = self.choices
 
 
@@ -296,3 +294,10 @@ class SplitDateTimeField(forms.fields.SplitDateTimeField):
         if data_list and None not in data_list:
             return datetime.datetime.combine(*data_list)
         return None
+
+class MultipleChoiceField(forms.fields.MultipleChoiceField):
+    def __init__(self, choices=(), required=True, widget=admin_widgets.SelectMultiple, label=None, initial=None, help_text=None):
+        """Translates choices to Django style: [('key1', 'name1'), ('key2', 'name2')] instead of ['name1', 'name2']
+        """
+        choices = [(item, item) for item in choices]
+        super(MultipleChoiceField, self).__init__(choices, required, widget, label, initial, help_text)
