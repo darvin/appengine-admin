@@ -1,6 +1,6 @@
 """
 Database functionality extensions.
-Taken from http://django-gae-helpers.googlecode.com/svn/trunk/gaeadapter.py
+ManyToManyProperty taken from http://django-gae-helpers.googlecode.com/svn/trunk/gaeadapter.py
 """
 
 from google.appengine.ext import db
