@@ -6,8 +6,12 @@ import datetime
 from google.appengine.ext.db import djangoforms
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
-import django.newforms as forms
-from django.newforms.util import ValidationError
+try:
+    from django import newforms as forms
+    from django.newforms.util import ValidationError
+except ImportError:
+    from django import forms
+    from django.forms.util import ValidationError
 
 from . import admin_widgets
 from . import utils

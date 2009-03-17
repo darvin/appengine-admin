@@ -173,7 +173,6 @@ class ManyToManyProperty(db.ListProperty):
         setattr(model_class, property_name[1:], ManyToManyManager(self.reference_class, property_name))
         
     def get_form_field(self, **kwargs):
-        import django.newforms as forms
         defaults = {'form_class': admin_forms.ModelMultipleChoiceField,
                     'reference_class': self.reference_class,
                     'required': False}

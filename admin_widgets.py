@@ -1,5 +1,8 @@
 from webob.multidict import UnicodeMultiDict
-import django.newforms as forms
+try:
+    from django import newforms as forms
+except ImportError:
+    from django import forms
 
 class ReferenceSelect(forms.widgets.Select):
     """Customized Select widget that adds link "Add new" near dropdown box.
