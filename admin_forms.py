@@ -17,7 +17,7 @@ from . import admin_widgets
 from . import utils
 from . import admin_settings
 
-MAX_REQUEST_SIZE = admin_settings.MAX_REQUEST_SIZE
+MAX_BLOB_SIZE = admin_settings.MAX_BLOB_SIZE
 BLOB_FIELD_META_SUFFIX = admin_settings.BLOB_FIELD_META_SUFFIX
 
 class AdminModelForm(djangoforms.ModelForm):
@@ -174,8 +174,8 @@ class FileField(forms.fields.Field):
             raise ValidationError(self.error_messages['invalid'])
         if not self.file_size:
             raise ValidationError(self.error_messages['empty'])
-        if self.file_size > MAX_REQUEST_SIZE:
-            raise ValidationError(self.error_messages['max_size'] % (self.file_size, MAX_REQUEST_SIZE))
+        if self.file_size > MAX_BLOB_SIZE:
+            raise ValidationError(self.error_messages['max_size'] % (self.file_size, MAX_BLOB_SIZE))
 
         return file_content
 forms.fields.FileField = FileField

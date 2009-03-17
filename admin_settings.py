@@ -11,7 +11,7 @@ ADMIN_ITEMS_PER_PAGE = 50
 
 # Set by Google - currently 10MB
 # This is used for validation of file uploads.
-MAX_REQUEST_SIZE = 10 * 1024 * 1024
+MAX_BLOB_SIZE = 1 * 1024 * 1024
 
 # Suffix for BlobProperty meta info storage.
 BLOB_FIELD_META_SUFFIX = '_meta'
