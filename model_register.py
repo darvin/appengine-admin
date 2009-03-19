@@ -92,7 +92,7 @@ class ModelAdmin(object):
                     # Show 'None' in place of missing items
                     new_value_list = []
                     for key in prop.value:
-                        new_value_list.append(str(db.get(key)))
+                        new_value_list.append(smart_unicode(db.get(key)))
                     prop.value = ', '.join(new_value_list)
             except datastore_errors.Error, exc:
                 # Error is raised if referenced property is deleted
