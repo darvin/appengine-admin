@@ -12,6 +12,7 @@ try:
 except ImportError:
     from django import forms
     from django.forms.util import ValidationError
+from django.utils.translation import gettext as _
 
 from . import admin_widgets
 from . import utils
