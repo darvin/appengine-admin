@@ -6,7 +6,10 @@ from google.appengine.ext import db
 try:
     from django.newforms.util import smart_unicode
 except ImportError:
-    from django.forms.util import smart_unicode
+    try:
+        from django.forms.util import smart_unicode
+    except ImportError:
+        from django.utils.encoding import smart_unicode
 
 from . import admin_forms
 from . import utils
