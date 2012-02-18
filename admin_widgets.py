@@ -55,7 +55,7 @@ class FileInput(forms.widgets.Input):
             } + output
         return output
 
-    def value_from_datadict(self, data, name):
+    def value_from_datadict(self, data, files, name):
         "File widgets take data from FILES, not POST"
         return data.get(name, None)
 
