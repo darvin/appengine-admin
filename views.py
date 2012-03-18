@@ -9,10 +9,10 @@ from google.appengine.ext import webapp
 from google.appengine.api import datastore_errors
 from google.appengine.ext.webapp import template
 
-from . import authorized
-from . import utils
-from . import admin_settings
-from . import model_register
+import authorized
+import utils
+import admin_settings
+import model_register
 from .model_register import getModelAdmin
 from .utils import Http404, Http500
 
@@ -51,9 +51,14 @@ class Admin(BaseRequestHandler):
         2) url - admin site page url (without prefix) that is used for determining what
             action on what model user wants to make.
     """
-    def __init__(self):
+
+    def __init__(self, request=None, response=None):
+        # compatibility w/ python27 & webapp2
+        if((request is None) and (response is None)):
+            super(Admin, self).__init__()
+        else:
+            super(Admin, self).__init__(request, response)
         logging.info("NEW Admin object created")
-        super(Admin, self).__init__()
         # Define and compile regexps for Admin site URL scheme.
         # Every URL will be mapped to appropriate method of this
         # class that handles all requests of particular HTTP message

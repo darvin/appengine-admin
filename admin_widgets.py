@@ -90,7 +90,7 @@ class AdminSplitDateTime(forms.SplitDateTimeWidget):
             ('Date:', rendered_widgets[0], 'Time:', rendered_widgets[1])
 
 class SelectMultiple(forms.SelectMultiple):
-    def value_from_datadict(self, data, name):
+    def value_from_datadict(self, data, files, name):
         if isinstance(data, UnicodeMultiDict):
             return data.getall(name)
         return data.get(name, None)

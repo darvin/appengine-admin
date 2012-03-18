@@ -2,8 +2,10 @@ import logging
 import pickle
 import copy
 import datetime
-
-from google.appengine.ext.db import djangoforms
+try:
+    from google.appengine.ext.db import djangoforms
+except ImportError:
+    import djangoforms
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 try:

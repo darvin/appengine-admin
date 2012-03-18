@@ -6,8 +6,6 @@ ManyToManyProperty taken from http://django-gae-helpers.googlecode.com/svn/trunk
 from google.appengine.ext import db
 from google.appengine.api.datastore_errors import BadValueError
 
-from . import admin_forms
-from . import admin_widgets
 
 class NotImplementedException(Exception):
     pass
@@ -171,13 +169,6 @@ class ManyToManyProperty(db.ListProperty):
         self.collection_name = "%s_set" % model_class.__name__.lower()
         setattr(self.reference_class, self.collection_name, ManyToManyManager(model_class, property_name, manager_class=_ReverseM2MManager))
         setattr(model_class, property_name[1:], ManyToManyManager(self.reference_class, property_name))
-        
-    def get_form_field(self, **kwargs):
-        defaults = {'form_class': admin_forms.ModelMultipleChoiceField,
-                    'reference_class': self.reference_class,
-                    'required': False}
-        defaults.update(kwargs)
-        return super(ManyToManyProperty, self).get_form_field(**defaults)
 
         
 class StringListChoicesProperty(db.StringListProperty):
@@ -205,24 +196,4 @@ class StringListChoicesProperty(db.StringListProperty):
                 raise BadValueError('Property %s must be a list' % self.name)
 
         value = self.validate_list_contents(value)
-        return value
-    
-    def get_form_field(self, **kwargs):
-        """Return a Django form field appropriate for a StringList property.
-
-        This defaults to a Textarea widget with a blank initial value.
-        """
-        defaults = {'form_class': admin_forms.MultipleChoiceField,
-            'choices': self.choices,
-            'widget': admin_widgets.SelectMultiple,
-        }
-        defaults.update(kwargs)
-        return super(StringListChoicesProperty, self).get_form_field(**defaults)
-    
-    def get_value_for_form(self, instance):
-        value = super(StringListChoicesProperty, self).get_value_for_form(instance)
-        if not value:
-            return None
-        if isinstance(value, basestring):
-            value = value.splitlines()
         return value
