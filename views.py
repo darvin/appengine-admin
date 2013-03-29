@@ -25,7 +25,7 @@ class BaseRequestHandler(webapp.RequestHandler):
         if isinstance(exception, Http404) or isinstance(exception, Http500):
             self.error(exception.code)
             path = os.path.join(ADMIN_TEMPLATE_DIR, str(exception.code) + ".html")
-            self.response.out.write(template.render(path, {'errorpage': True}))
+            self.response.out.write(template.render(path, {'errorpage': True}).decode('UTF-8'))
         else:
             super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
 
@@ -155,7 +155,7 @@ class Admin(BaseRequestHandler):
         self.response.out.write(template.render(path, {
             'models': self.models,
             'urlPrefix': self.urlPrefix,
-        }))
+        }).decode('UTF-8'))
 
     @authorized.role("admin")
     def list_get(self, modelName):
@@ -177,7 +177,7 @@ class Admin(BaseRequestHandler):
             'listProperties': modelAdmin._listProperties,
             'items': map(modelAdmin._attachListFields, items),
             'page': page,
-        }))
+        }).decode('UTF-8'))
 
     @authorized.role("admin")
     def new_get(self, modelName):
@@ -194,7 +194,7 @@ class Admin(BaseRequestHandler):
             'readonlyProperties': modelAdmin._readonlyProperties,
         }
         path = os.path.join(ADMIN_TEMPLATE_DIR, 'model_item_edit.html')
-        self.response.out.write(template.render(path, templateValues))
+        self.response.out.write(template.render(path, templateValues).decode('UTF-8'))
 
     @authorized.role("admin")
     def new_post(self, modelName):
@@ -217,7 +217,7 @@ class Admin(BaseRequestHandler):
                 'readonlyProperties': modelAdmin._readonlyProperties,
             }
             path = os.path.join(ADMIN_TEMPLATE_DIR, 'model_item_edit.html')
-            self.response.out.write(template.render(path, templateValues))
+            self.response.out.write(template.render(path, templateValues).decode('UTF-8'))
 
     @authorized.role("admin")
     def edit_get(self, modelName, key = None):
@@ -235,7 +235,7 @@ class Admin(BaseRequestHandler):
             'readonlyProperties': self._readonlyPropsWithValues(item, modelAdmin),
         }
         path = os.path.join(ADMIN_TEMPLATE_DIR, 'model_item_edit.html')
-        self.response.out.write(template.render(path, templateValues))
+        self.response.out.write(template.render(path, templateValues).decode('UTF-8'))
 
     @authorized.role("admin")
     def edit_post(self, modelName, key):
@@ -259,7 +259,7 @@ class Admin(BaseRequestHandler):
                 'readonlyProperties': self._readonlyPropsWithValues(item, modelAdmin),
             }
             path = os.path.join(ADMIN_TEMPLATE_DIR, 'model_item_edit.html')
-            self.response.out.write(template.render(path, templateValues))
+            self.response.out.write(template.render(path, templateValues).decode('UTF-8'))
 
 
     @authorized.role("admin")
